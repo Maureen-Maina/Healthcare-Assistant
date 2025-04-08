@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Healthcare Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/appointments.js') }}" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places,geometry"></script>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+    
+
+        .navbar {
+            background-color: #2c7da0!important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            min-height: 48px;
+            max-height: 48px;
+        }
+
+        .navbar .container-fluid {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 1.1rem;
+            font-weight: 500;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-text {
+            color: white !important;
+            font-size: 0.9rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .d-flex.align-items-center {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #2c7da0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            margin-left: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-icon:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 550px); /* Account for navbar and margins */
+            text-align: center;
+        }
+
+        .chat-container {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            height: calc(100vh - 500px);
+            background-color: #f0f0f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 1000px;
+            width: 98%;
+            position: relative;
+            min-height: 450px;
+        }
+        .boby.eye-care{
+            background-color: #f0f0f0;
+            color: #444444;
+        }
+
+        .chat-header {
+            padding: 24px;
+            border-bottom: 1px solid #eee;
+            background-color: #f0f0f0;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .chat-title {
+            margin: 0;
+            font-size: 1.75rem;
+            color: #2c7da0;
+            font-weight: 600;
+        }
+
+        .chat-messages-wrapper {
+            position: relative;
+            overflow: hidden;
+            min-height: 350px;
+        }
+
+        .chat-messages {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            overflow-y: auto;
+            gap: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: #2c7da0 #e0e0e0;
+            white-space: pre-line; /* This preserves newlines and spaces */
+            word-wrap: break-word; /* Ensures long words break if necessary */
+        }
+        .message-bubble {
+            background-color: #f1f1f1;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            }
+        .message-bubble ul {
+    padding-left: 20px; /* Proper indentation */
+    margin-top: 5px;
+}
+
+.message-bubble li {
+    margin-bottom: 4px; /* Spacing between items */
+    list-style-type: disc; /* Ensures bullets are used */
+}
+
+
+        .chat-input-container {
+            padding: 16px;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: white;
+            z-index: 10;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.05);
+        }
+
+        .chat-input-wrapper {
+            flex: 1;
+            position: relative;
+            margin-bottom: 4px;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            resize: none;
+            max-height: 120px;
+            min-height: 40px;
+            font-size: 14px;
+            line-height: 1.4;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background-color: #f8f9fa;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            background-color: #f0f0f0;
+            box-shadow: 0 2px 8px rgba(44, 125, 160, 0.15);
+        }
+
+        .chat-input::placeholder {
+            color: #90a4ae;
+        }
+
+        .send-button {
+            min-width: 100px;
+            height: 48px;
+            background-color: #2c7da0;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 24px;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(44, 125, 160, 0.25);
+        }
+
+        .send-button:hover {
+            background-color: #1a6985;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(44, 125, 160, 0.35);
+        }
+
+        .send-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(44, 125, 160, 0.25);
+        }
+
+        .send-button:disabled {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            color: #90a4ae;
+        }
+
+        .typing-indicator {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #90a4ae;
+            border-radius: 50%;
+            animation: typing 1s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Chat Messages Container */
+        .chat-messages {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            overflow-y: auto;
+            gap: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: #2c7da0 #e0e0e0;
+        }
+
+        /* Base Message Styles */
+        .message {
+            max-width: 70%;
+            margin: 8px 0;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 15px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            animation: messageAppear 0.3s ease forwards;
+        }
+
+        .message-content {
+            width: 100%;
+        }
+
+        /* User Message Styles */
+        .user-message {
+            align-self: flex-end;
+            background-color: #2c7da0;
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 2px 4px rgba(44, 125, 160, 0.2);
+        }
+
+        /* Bot Message Styles */
+        .bot-message {
+            align-self: flex-start;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Message Animation */
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Remove any conflicting styles */
+        .message,
+        .user-message,
+        .bot-message,
+        .message-content {
+            display: block;
+            flex: none;
+            flex-direction: unset;
+            align-items: unset;
+            gap: unset;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 300px;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            margin-top: 8px;
+            padding: 16px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 3px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb {
+            background: #cfd4da;
+            border-radius: 3px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb:hover {
+            background: #adb5bd;
+        }
+
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .progress-percentage {
+            color: #2c7da0;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2c7da0;
+            border-radius: 3px;
+            font-size: 10px;
+            color: white;
+            text-align: right;
+            padding-right: 4px;
+            line-height: 6px;
+            transition: width 0.3s ease;
+        }
+
+        .modal-header {
+            position: relative;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-header .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #6c757d;
+            opacity: .5;
+            cursor: pointer;
+            transition: opacity .15s;
+        }
+
+        .modal-header .close:hover {
+            opacity: 1;
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .dropdown-section-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin: 16px 0 8px 0;
+        }
+
+        .quick-actions-grid,
+        .tools-grid,
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .action-item,
+        .tool-item,
+        .settings-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .action-item:hover,
+        .tool-item:hover,
+        .settings-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .action-item i,
+        .tool-item i,
+        .settings-item i {
+            font-size: 20px;
+            margin-bottom: 4px;
+            color: #2c7da0;
+        }
+
+        .action-item span,
+        .tool-item span,
+        .settings-item span {
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 8px 0;
+        }
+
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .progress-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2c7da0;
+            border-radius: 3px;
+            font-size: 10px;
+            color: white;
+            text-align: right;
+            padding-right: 4px;
+            line-height: 6px;
+            transition: width 0.3s ease;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 12px 0;
+            padding: 0 12px;
+        }
+
+        .tool-item {
+            height: 100px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .tool-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .tool-item i {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #2c7da0;
+        }
+
+        .tool-item span {
+            font-size: 13px;
+            line-height: 1.3;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-backdrop.show {
+            display: block;
+        }
+
+        .dropdown-section-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin: 16px 0 8px 0;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            width: 30px;
+            height: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-content {
+            position: relative;
+            padding: 20px;
+        }
+
+        /* Warning message styling */
+        .warning-message {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-message i {
+            font-size: 20px;
+            color: #e6a210;
+        }
+
+        .warning-message.serious {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        .warning-message.serious i {
+            color: #dc3545;
+        }
+
+        /* Persistent symptoms styling */
+        .persistent-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .persistent-warning i {
+            color: #ffc107;
+            font-size: 18px;
+        }
+
+        .serious-symptoms {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .serious-symptoms i {
+            color: #dc3545;
+            font-size: 18px;
+        }
+    </style>
+    <style>
+        /* Reset modal styles */
+        .modal-open {
+            padding-right: 0 !important;
+            overflow: auto !important;
+        }
+        
+        .modal {
+            background: rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        
+        .modal-backdrop {
+            display: none !important;
+        }
+        
+        .modal-dialog {
+            margin: 1.75rem auto !important;
+            transform: none !important;
+        }
+        
+        .modal-content {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        body {
+            overflow-y: auto !important;
+        }
+        
+        /* Remove any backdrop filters */
+        * {
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+        }
+    </style>
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <div class="dropdown-backdrop" id="dropdownBackdrop"></div>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Your 24/7 Healthcare Assistant</a>
+            <div class="d-flex align-items-center">
+                <span class="nav-text">Welcome, {{ current_user.username }}!</span>
+                <a class="nav-text ms-3" href="{{ url_for('logout') }}">Logout</a>
+                <div class="user-icon" id="userIcon" onclick="toggleDropdown()">{{ current_user.username[:2].upper() }}</div>
+                <div class="dropdown-menu" id="userDropdown">
+                    <!-- Welcome Section -->
+                    <div class="dropdown-header">
+                        <span>👋 Welcome, {{ current_user.username }}</span>
+                        <span class="close" onclick="document.getElementById('userDropdown').style.display='none'">&times;</span>
+                    </div>
+                    <div class="dropdown-divider"></div>
+
+                    <!-- Quick Actions Section -->
+                    <div class="dropdown-section-header">⚡ Quick Actions</div>
+                    <div class="quick-actions-grid">
+                        <a href="#" onclick="openModal('healthSummaryModal')" class="action-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Log Health<br>Metrics</span>
+                        </a>
+                        <a href="#" onclick="openModal('mealModal')" class="action-item">
+                            <i class="fas fa-utensils"></i>
+                            <span>Log Meal</span>
+                        </a>
+                        <a href="#" onclick="openModal('exerciseModal')" class="action-item">
+                            <i class="fas fa-running"></i>
+                            <span>Log Exercise</span>
+                        </a>
+                        <a href="#" onclick="openModal('waterModal')" class="action-item">
+                            <i class="fas fa-droplet"></i>
+                            <span>Log Water</span>
+                        </a>
+                    </div>
+
+                    <!-- Today's Progress Section -->
+                    <div class="dropdown-section-header">📊 Today's Progress</div>
+                    <div class="progress-grid">
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Water Goal</span>
+                                <span class="progress-percentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Exercise Goal</span>
+                                <span class="progress-percentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Calorie Goal</span>
+                                <span class="progress-percentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-label">
+                                <span>Sleep Goal</span>
+                                <span class="progress-percentage">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Tools Section -->
+                    <div class="dropdown-section-header">🔧 Health Tools</div>
+                    <div class="tools-grid">
+                        <a href="#" onclick="openModal('bmiModal')" class="tool-item">
+                            <i class="fas fa-weight"></i>
+                            <span>BMI<br>Calculator</span>
+                        </a>
+                        <a href="#" onclick="openModal('calorieModal')" class="tool-item">
+                            <i class="fas fa-fire"></i>
+                            <span>Calorie<br>Calculator</span>
+                        </a>
+                        <a href="#" onclick="openModal('healthSummaryModal')" class="tool-item">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Health<br>Summary</span>
+                        </a>
+                        <a href="#" onclick="openModal('goalModal')" class="tool-item">
+                            <i class="fas fa-bullseye"></i>
+                            <span>Manage<br>Goals</span>
+                        </a>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#appointmentModal" class="tool-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Book<br>Appointment</span>
+                        </a>
+                        <a href="#" onclick="openModal('hospitalModal')" class="tool-item">
+                            <i class="fas fa-hospital"></i>
+                            <span>Find Nearby<br>Hospitals</span>
+                        </a>
+                    </div>
+
+                    <!-- Settings & Help Section -->
+                    <div class="dropdown-section-header">⚙️ Settings & Help</div>
+                    <div class="settings-grid">
+                        <a href="#" onclick="openModal('settingsModal')" class="settings-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                        <a href="#" onclick="openModal('helpModal')" class="settings-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Help</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h1 class="chat-title">How can i help you today?</h1>
+            </div>
+            <div class="chat-messages-wrapper">
+                <div class="chat-messages" id="chatMessages"></div>
+            </div>
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea id="userInput" class="chat-input" placeholder="Type your message..." rows="1"></textarea>
+                </div>
+                <button class="send-button" onclick="sendMessage()" id="sendButton">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <h1>Healthcare Assistant</h1>
+                <p class="lead">Please log in to continue</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary me-2">Login</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal Forms -->
+    <div class="modal" id="healthModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Log Health Metrics</h2>
+            
+            <!-- Warning messages -->
+            <div class="persistent-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>If symptoms persist for more than 3 days, please consult a healthcare provider.</span>
+            </div>
+            <div class="serious-symptoms">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>If you experience severe symptoms like difficulty breathing or chest pain, seek immediate medical attention.</span>
+            </div>
+
+            <form id="healthForm" onsubmit="handleHealthMetricsSubmit(event)">
+                <div class="form-group">
+                    <label>Weight (kg)</label>
+                    <input type="number" step="0.1" name="weight" min="30" max="300" required>
+                </div>
+                <div class="form-group">
+                    <label>Height (cm)</label>
+                    <input type="number" name="height" min="100" max="250" required>
+                </div>
+                <div class="form-group">
+                    <label>Blood Pressure (Systolic)</label>
+                    <input type="number" name="systolic" min="60" max="200" required>
+                </div>
+                <div class="form-group">
+                    <label>Blood Pressure (Diastolic)</label>
+                    <input type="number" name="diastolic" min="40" max="130" required>
+                </div>
+                <div class="form-group">
+                    <label>Heart Rate (bpm)</label>
+                    <input type="number" name="heart_rate" min="40" max="200" required>
+                </div>
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="mealModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Log Meal</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="mealForm" onsubmit="handleMealSubmit(event)">
+                <div class="form-group">
+                    <label>Meal Type</label>
+                    <select name="type" required>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Foods (comma separated)</label>
+                    <input type="text" name="foods" required>
+                </div>
+                <div class="form-group">
+                    <label>Calories</label>
+                    <input type="number" name="calories" required>
+                </div>
+                <div class="form-group">
+                    <label>Protein (g)</label>
+                    <input type="number" name="protein" required>
+                </div>
+                <div class="form-group">
+                    <label>Carbs (g)</label>
+                    <input type="number" name="carbs" required>
+                </div>
+                <div class="form-group">
+                    <label>Fats (g)</label>
+                    <input type="number" name="fats" required>
+                </div>
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="exerciseModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Log Exercise</h2>
+            <form id="exerciseForm" onsubmit="handleExerciseSubmit(event)">
+                <div class="form-group">
+                    <label for="exerciseType">Type of Exercise</label>
+                    <select class="form-control" id="exerciseType" required>
+                        <option value="">Select exercise type</option>
+                        <option value="walking">Walking</option>
+                        <option value="running">Running</option>
+                        <option value="cycling">Cycling</option>
+                        <option value="swimming">Swimming</option>
+                        <option value="yoga">Yoga</option>
+                        <option value="strength">Strength Training</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exerciseDuration">Duration (minutes)</label>
+                    <input type="number" class="form-control" id="exerciseDuration" required min="1" max="300">
+                </div>
+                <div class="form-group">
+                    <label for="exerciseIntensity">Intensity</label>
+                    <select class="form-control" id="exerciseIntensity" required>
+                        <option value="low">Low</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exerciseNotes">Notes (optional)</label>
+                    <textarea class="form-control" id="exerciseNotes" rows="2"></textarea>
+                </div>
+                <div class="progress mb-3">
+                    <div class="progress-bar bg-success" id="exerciseProgressBar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Save Exercise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="waterModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Log Water Intake</h2>
+            <form id="waterForm" onsubmit="handleWaterSubmit(event)">
+                <div class="form-group">
+                    <label for="waterAmount">How many glasses of water have you had?</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="waterAmount" name="amount" min="1" max="15" required>
+                        <span class="input-group-text">glasses</span>
+                    </div>
+                    <div class="form-text">1 glass ≈ 250ml</div>
+                </div>
+                <div class="progress mb-3">
+                    <div class="progress-bar bg-info" id="waterProgressBar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="goalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Set Goals</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="goalForm">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select name="category" required>
+                        <option value="water">Water Intake</option>
+                        <option value="exercise">Exercise</option>
+                        <option value="sleep">Sleep</option>
+                        <option value="weight">Weight</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target</label>
+                    <input type="number" name="target" required>
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <select name="unit" required>
+                        <option value="ml">Milliliters</option>
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="kg">Kilograms</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duration (days)</label>
+                    <input type="number" name="duration" value="30" required>
+                </div>
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="bmiModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>BMI Calculator</h2>
+            <form id="bmiForm" onsubmit="calculateBMI(event)">
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label>
+                    <input type="number" class="form-control" id="weight" required min="20" max="300" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="height">Height (cm)</label>
+                    <input type="number" class="form-control" id="height" required min="100" max="250">
+                </div>
+                <div id="bmiResult" class="result-box" style="display: none;">
+                    <h3>Your BMI Result</h3>
+                    <div class="bmi-value"></div>
+                    <div class="bmi-category"></div>
+                    <div class="bmi-info mt-3"></div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Calculate BMI</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="calorieModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Calorie Calculator</h2>
+            <form id="calorieForm" onsubmit="calculateCalories(event)">
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" class="form-control" id="age" required min="15" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="male" required> Male
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="gender" value="female"> Female
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="calorieWeight">Weight (kg)</label>
+                    <input type="number" class="form-control" id="calorieWeight" required min="20" max="300" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="calorieHeight">Height (cm)</label>
+                    <input type="number" class="form-control" id="calorieHeight" required min="100" max="250">
+                </div>
+                <div class="form-group">
+                    <label for="activity">Activity Level</label>
+                    <select class="form-control" id="activity" required>
+                        <option value="1.2">Sedentary (little or no exercise)</option>
+                        <option value="1.375">Lightly active (light exercise 1-3 days/week)</option>
+                        <option value="1.55">Moderately active (moderate exercise 3-5 days/week)</option>
+                        <option value="1.725">Very active (hard exercise 6-7 days/week)</option>
+                        <option value="1.9">Extra active (very hard exercise & physical job)</option>
+                    </select>
+                </div>
+                <div id="calorieResult" class="result-box" style="display: none;">
+                    <h3>Your Daily Calorie Needs</h3>
+                    <div class="calorie-maintain"></div>
+                    <div class="calorie-lose"></div>
+                    <div class="calorie-gain"></div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Calculate Calories</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="settingsForm">
+                <div class="form-group">
+                    <label for="daily_water_goal">Daily Water Goal (ml)</label>
+                    <input type="number" class="form-control" id="daily_water_goal" name="daily_water_goal" required>
+                </div>
+                <div class="form-group">
+                    <label for="daily_calorie_goal">Daily Calorie Goal (kcal)</label>
+                    <input type="number" class="form-control" id="daily_calorie_goal" name="daily_calorie_goal" required>
+                </div>
+                <div class="form-group">
+                    <label for="daily_exercise_goal">Daily Exercise Goal (minutes)</label>
+                    <input type="number" class="form-control" id="daily_exercise_goal" name="daily_exercise_goal" required>
+                </div>
+                <div class="form-group">
+                    <label for="daily_sleep_goal">Daily Sleep Goal (hours)</label>
+                    <input type="number" class="form-control" id="daily_sleep_goal" name="daily_sleep_goal" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Help & Documentation</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="helpContent">
+                <div class="help-section">
+                    <h3>Getting Started</h3>
+                    <p>Welcome to your health tracking app! Here are some basic steps to get started:</p>
+                    <ul>
+                        <li>Set your daily goals in Settings</li>
+                        <li>Use quick actions to log your activities</li>
+                        <li>Track your progress on the dashboard</li>
+                        <li>Set and monitor your health goals</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>Tracking Your Health</h3>
+                    <p>You can track various aspects of your health:</p>
+                    <ul>
+                        <li>Water intake</li>
+                        <li>Exercise</li>
+                        <li>Meals and nutrition</li>
+                        <li>Sleep</li>
+                        <li>Weight and BMI</li>
+                        <li>Blood pressure</li>
+                        <li>Heart rate</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>Setting Goals</h3>
+                    <p>Set personalized health goals:</p>
+                    <ul>
+                        <li>Water intake (ml/day)</li>
+                        <li>Exercise duration (minutes/day)</li>
+                        <li>Calorie intake (kcal/day)</li>
+                        <li>Sleep duration (hours/day)</li>
+                        <li>Weight goals</li>
+                        <li>Custom goals</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="summaryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-chart-line"></i> Health Summary</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <div class="summary-grid">
+                <!-- Today's Metrics Section -->
+                <div class="summary-section">
+                    <h3><i class="fas fa-heartbeat"></i> Today's Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <i class="fas fa-weight"></i>
+                            <span class="metric-label">Weight</span>
+                            <span class="metric-value" id="weight-value">Loading...</span>
+                        </div>
+                        <div class="metric-card">
+                            <i class="fas fa-heart"></i>
+                            <span class="metric-label">Blood Pressure</span>
+                            <span class="metric-value" id="bp-value">Loading...</span>
+                        </div>
+                        <div class="metric-card">
+                            <i class="fas fa-heartbeat"></i>
+                            <span class="metric-label">Heart Rate</span>
+                            <span class="metric-value" id="hr-value">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Tracking Section -->
+                <div class="summary-section">
+                    <h3><i class="fas fa-running"></i> Activity Tracking</h3>
+                    <div class="progress-container">
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span><i class="fas fa-tint"></i> Water Intake</span>
+                                <span class="progress-value" id="water-progress">0/8 glasses</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="water-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span><i class="fas fa-running"></i> Exercise</span>
+                                <span class="progress-value" id="exercise-progress">0/30 mins</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="exercise-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <div class="progress-header">
+                                <span><i class="fas fa-utensils"></i> Nutrition</span>
+                                <span class="progress-value" id="nutrition-progress">0/2000 cal</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="nutrition-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Well-being Section -->
+                <div class="summary-section">
+                    <h3><i class="fas fa-smile"></i> Well-being</h3>
+                    <div class="wellbeing-grid">
+                        <div class="wellbeing-card">
+                            <i class="fas fa-bed"></i>
+                            <span class="wellbeing-label">Sleep</span>
+                            <span class="wellbeing-value" id="sleep-value">Loading...</span>
+                            <div class="quality-indicator" id="sleep-quality"></div>
+                        </div>
+                        <div class="wellbeing-card">
+                            <i class="fas fa-smile"></i>
+                            <span class="wellbeing-label">Mood</span>
+                            <span class="wellbeing-value" id="mood-value">Loading...</span>
+                            <div class="mood-indicator" id="mood-indicator"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-footer">
+                <div class="summary-status" id="summary-status"></div>
+                <button onclick="refreshSummary()" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="hospitalModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Find Nearby Hospitals</h2>
+            <div class="hospital-finder">
+                <div class="search-section">
+                    <form id="hospitalSearchForm" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" id="locationInput" class="form-control" 
+                                placeholder="Enter your location (e.g., city, address)" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">
+                            Or use your current location:
+                            <button type="button" id="useLocationBtn" class="btn btn-link">
+                                <i class="fas fa-location-dot"></i> Use my location
+                            </button>
+                        </small>
+                    </form>
+                </div>
+
+                <div id="searchSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Searching for nearby hospitals...</p>
+                </div>
+
+                <div id="hospitalResults" style="display: none;">
+                    <h3>Nearby Hospitals</h3>
+                    <div id="hospitalList" class="hospital-list">
+                        <!-- Hospital results will be inserted here -->
+                    </div>
+                </div>
+
+                <div id="hospitalMap" style="height: 400px; margin-top: 20px; display: none;">
+                    <!-- Map will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Modal -->
+    <div class="modal" id="appointmentModal" tabindex="-1" role="dialog" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentModalLabel">
+                        <i class="fas fa-calendar-check"></i> Book an Appointment
+                    </h5>
+                    <span class="close" onclick="closeModal()">&times;</span>
+                </div>
+                <form id="appointmentForm">
+                    <div class="modal-body">
+                        <div id="appointmentError" class="alert alert-danger" style="display: none;"></div>
+                        <div class="mb-3">
+                            <label for="appointmentType" class="form-label">Type of Appointment *</label>
+                            <select class="form-select" id="appointmentType" required>
+                                <option value="">Select type...</option>
+                                <option value="general">General Checkup</option>
+                                <option value="specialist">Specialist Consultation</option>
+                                <option value="dental">Dental</option>
+                                <option value="vision">Vision</option>
+                                <option value="vaccination">Vaccination</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointmentDate" class="form-label">Preferred Date *</label>
+                            <input type="date" class="form-control" id="appointmentDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointmentTime" class="form-label">Preferred Time *</label>
+                            <select class="form-select" id="appointmentTime" required>
+                                <option value="">Select time...</option>
+                                <option value="morning">Morning (9:00 AM - 12:00 PM)</option>
+                                <option value="afternoon">Afternoon (1:00 PM - 4:00 PM)</option>
+                                <option value="evening">Evening (5:00 PM - 8:00 PM)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="appointmentNotes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="appointmentNotes" rows="3" 
+                                placeholder="Any specific concerns or requirements..."></textarea>
+                        </div>
+                        <p class="text-muted small">* Required fields</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitAppointment()">
+                            <i class="fas fa-calendar-check"></i> Schedule Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="healthSummaryModal" tabindex="-1" aria-labelledby="healthSummaryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="healthSummaryModalLabel">
+                        <i class="fas fa-chart-line"></i> Health Summary
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="summary-grid">
+                        <!-- Today's Metrics Section -->
+                        <div class="summary-section">
+                            <h3><i class="fas fa-chart-line"></i> Today's Metrics</h3>
+                            <div class="metrics-grid">
+                                <div class="metric-card">
+                                    <i class="fas fa-weight"></i>
+                                    <span class="metric-label">Weight</span>
+                                    <span class="metric-value" id="weightValue">--</span>
+                                </div>
+                                <div class="metric-card">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="metric-label">Blood Pressure</span>
+                                    <span class="metric-value" id="bpValue">--</span>
+                                </div>
+                                <div class="metric-card">
+                                    <i class="fas fa-heartbeat"></i>
+                                    <span class="metric-label">Heart Rate</span>
+                                    <span class="metric-value" id="hrValue">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity Tracking Section -->
+                        <div class="summary-section">
+                            <h3><i class="fas fa-running"></i> Activity Tracking</h3>
+                            <div class="progress-container">
+                                <div class="progress-item">
+                                    <div class="progress-header">
+                                        <span><i class="fas fa-glass-water"></i> Water Intake</span>
+                                        <span class="progress-value" id="waterValue">0/8 glasses</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="waterProgress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-header">
+                                        <span><i class="fas fa-dumbbell"></i> Exercise</span>
+                                        <span class="progress-value" id="exerciseValue">0/30 min</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="exerciseProgress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="progress-item">
+                                    <div class="progress-header">
+                                        <span><i class="fas fa-utensils"></i> Nutrition</span>
+                                        <span class="progress-value" id="nutritionValue">0/2000 cal</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="nutritionProgress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Well-being Section -->
+                        <div class="summary-section">
+                            <h3><i class="fas fa-smile"></i> Well-being</h3>
+                            <div class="wellbeing-grid">
+                                <div class="wellbeing-card">
+                                    <i class="fas fa-moon"></i>
+                                    <span class="wellbeing-label">Sleep</span>
+                                    <span class="wellbeing-value" id="sleepValue">--</span>
+                                    <div class="quality-indicator" id="sleepQuality"></div>
+                                </div>
+                                <div class="wellbeing-card">
+                                    <i class="fas fa-face-smile"></i>
+                                    <span class="wellbeing-label">Mood</span>
+                                    <span class="wellbeing-value" id="moodValue">--</span>
+                                    <div class="mood-indicator" id="moodLevel"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-footer">
+                        <span class="summary-status" id="summaryStatus">Last updated: Just now</span>
+                        <button class="refresh-btn" id="refreshSummary">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="waterModal" tabindex="-1" aria-labelledby="waterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="waterModalLabel">
+                        <i class="fas fa-glass-water"></i> Log Water Intake
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="waterForm" onsubmit="handleWaterSubmit(event)">
+                        <div class="mb-3">
+                            <label for="waterAmount" class="form-label">Amount (glasses)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="waterAmount" name="amount" min="1" max="8" required>
+                                <span class="input-group-text">glasses</span>
+                            </div>
+                            <div class="form-text">1 glass ≈ 250ml</div>
+                        </div>
+                        <div class="progress mb-3">
+                            <div class="progress-bar" id="waterProgressBar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Food Item Row Styles */
+        .food-item-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 40px;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: start;
+        }
+
+        .food-item-row .form-control {
+            margin-top: 0;
+        }
+
+        .remove-item {
+            padding: 8px;
+            line-height: 1;
+            height: 38px;
+        }
+
+        /* Textarea Styles */
+        textarea.form-control {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Progress Bar Colors */
+        .progress-bar.bg-success {
+            background-color: #198754;
+        }
+
+        .progress-bar.bg-warning {
+            background-color: #ffc107;
+        }
+    </style>
+
+    <script>
+        // Exercise Logging
+        function handleExerciseSubmit(event) {
+            event.preventDefault();
+            const type = document.getElementById('exerciseType').value;
+            const duration = parseInt(document.getElementById('exerciseDuration').value);
+            
+            // Calculate progress (example: 30 minutes of exercise = 100%)
+            const progress = Math.min(100, (duration / 30) * 100);
+            
+            // Update progress bars
+            const modalProgress = document.getElementById('exerciseProgressBar');
+            modalProgress.style.width = progress + '%';
+            modalProgress.setAttribute('aria-valuenow', progress);
+
+            // Update dropdown progress
+            const dropdownProgress = document.querySelector('.progress-item:nth-child(2) .progress-fill');
+            const dropdownPercentage = document.querySelector('.progress-item:nth-child(2) .progress-percentage');
+            if (dropdownProgress && dropdownPercentage) {
+                dropdownProgress.style.width = progress + '%';
+                dropdownPercentage.textContent = Math.round(progress) + '%';
+            }
+
+            // Show success message and close modal
+            showSuccessMessage('exerciseForm', `Logged ${duration} minutes of ${type} exercise!`);
+        }
+
+        // Meal Logging
+        function handleMealSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            
+            // Get form values
+            const type = form.querySelector('[name="type"]').value;
+            const foods = form.querySelector('[name="foods"]').value;
+            const calories = parseInt(form.querySelector('[name="calories"]').value);
+            const protein = parseInt(form.querySelector('[name="protein"]').value);
+            const carbs = parseInt(form.querySelector('[name="carbs"]').value);
+            const fats = parseInt(form.querySelector('[name="fats"]').value);
+
+            // Create meal data object
+            const mealData = {
+                type: type,
+                foods: foods.split(',').map(food => food.trim()),
+                calories: calories,
+                protein: protein,
+                carbs: carbs,
+                fats: fats,
+                date: new Date().toISOString()
+            };
+
+            // Send data to server
+            fetch('/log_meal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(mealData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = `Successfully logged ${type} (${calories} calories)`;
+                    form.appendChild(messageDiv);
+
+                    // Reset form
+                    form.reset();
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+
+                    // Update progress if needed
+                    if (typeof updateProgress === 'function') {
+                        updateProgress();
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to log meal');
+                }
+            })
+            .catch(error => {
+                // Show error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger mt-3';
+                errorDiv.textContent = error.message || 'An error occurred while logging the meal';
+                form.appendChild(errorDiv);
+
+                // Remove error message after 3 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+            });
+        }
+
+        // Add new food item row
+        function addFoodItem() {
+            const container = document.getElementById('foodItemsList');
+            const newRow = document.createElement('div');
+            newRow.className = 'food-item-row';
+            newRow.innerHTML = `
+                <input type="text" class="form-control food-item" placeholder="Enter food item" required>
+                <input type="number" class="form-control calories" placeholder="Calories" min="0" required>
+                <button type="button" class="btn btn-outline-danger remove-item" onclick="removeFoodItem(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(newRow);
+        }
+
+        // Remove food item row
+        function removeFoodItem(button) {
+            const row = button.closest('.food-item-row');
+            if (document.querySelectorAll('.food-item-row').length > 1) {
+                row.remove();
+            }
+        }
+
+        // Show success message and close modal
+        function showSuccessMessage(formId, message) {
+            const form = document.getElementById(formId);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'alert alert-success mt-3';
+            messageDiv.textContent = message;
+            form.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+
+            setTimeout(() => {
+                closeModal();
+            }, 2000);
+        }
+    </script>
+
+    <script>
+        let isTyping = false;
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'bot-message typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dots">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+            `;
+            document.querySelector('.chat-messages').appendChild(typingDiv);
+            return typingDiv;
+        }
+
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
+
+        async function addMessage(text, isUser = false) {
+            const messagesDiv = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(isUser ? 'user-message' : 'bot-message');
+
+            // Format the response if it's from the bot
+            if (!isUser && text.includes('Based on your symptoms')) {
+                const formattedText = text
+                    // Match any warning about persistent symptoms
+                    .replace(
+                        /(⚠️.*symptoms.*persisted.*(?:week|weeks|day|days|month|months).*healthcare provider\.)/g,
+                        '<div class="warning-alert"><span>⚠️</span><span>$1</span></div>'
+                    )
+                    .replace(
+                        /\[#28a745 border\] (.*?)(?=\n|$)/g,
+                        '<div class="condition">$1</div>'
+                    )
+                    .replace(
+                        /(Recommended treatments:|Advice:)/g,
+                        '<h3>$1</h3>'
+                    );
+
+                messageDiv.innerHTML = `<div class="message-content">${formattedText}</div>`;
+            } else {
+                messageDiv.innerHTML = `<div class="message-content">${text}</div>`;
+            }
+
+            messagesDiv.appendChild(messageDiv);
+
+            // Ensure the message is visible by scrolling
+            const scrollToBottom = () => {
+                const lastMessage = messagesDiv.lastElementChild;
+                if (lastMessage) {
+                    const containerHeight = messagesDiv.clientHeight;
+                    const messageTop = lastMessage.offsetTop;
+                    const messageHeight = lastMessage.offsetHeight;
+
+                    // Calculate if message is partially visible
+                    const scrollPosition = messageTop + messageHeight - containerHeight;
+                    if (scrollPosition > messagesDiv.scrollTop) {
+                        messagesDiv.scrollTo({
+                            top: scrollPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            };
+
+            // Try scrolling immediately and after delays for reliability
+            scrollToBottom();
+            setTimeout(scrollToBottom, 100);
+            setTimeout(scrollToBottom, 500); // Extra attempt for longer messages
+        }
+
+        function getInitials(name) {
+            return name.split(' ')
+                .map(word => word.charAt(0))
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+
+            if (message === '' || isTyping) return;
+
+            // Clear input and reset height
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Add user message and scroll to bottom
+            addMessage(message, true);
+
+            // Show typing indicator
+            isTyping = true;
+            const typingIndicator = showTypingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // Remove typing indicator
+                typingIndicator.remove();
+                isTyping = false;
+
+                // Add bot response with slight delay for natural feel
+                setTimeout(() => {
+                    addMessage(data.response);
+                }, 300);
+
+            } catch (error) {
+                console.error('Error:', error);
+                typingIndicator.remove();
+                isTyping = false;
+                addMessage('Sorry, I encountered an error. Please try again.');
+            }
+        }
+
+        // Auto-resize textarea and scroll to bottom
+        document.getElementById('userInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+
+            // Scroll chat to bottom when user types
+            const messagesDiv = document.querySelector('.chat-messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+
+        // Handle Enter key
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send button click handler
+        document.querySelector('.send-button').addEventListener('click', sendMessage);
+
+        //list for response
+        document.getElementById("chat-box").innerHTML += `<div class="message-bubble">${response.replace(/\n/g, "<br>")}</div>`;
+
+        // Initialize user icon with initials
+        document.addEventListener('DOMContentLoaded', function() {
+            const username = "{{ current_user.username }}";
+            const userIcon = document.getElementById('userIcon');
+            if (userIcon) {
+                userIcon.textContent = getInitials(username);
+            }
+        });
+
+        // Modal closing functionality
+        function closeModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
+        function openModal(modalId) {
+            // First close any open modals
+            closeModal();
+            // Then open the requested modal
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        // Initialize modal event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers to all close buttons
+            const closeButtons = document.querySelectorAll('.close');
+            closeButtons.forEach(button => {
+                button.onclick = closeModal;
+            });
+
+            // Add click handler to close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    closeModal();
+                }
+            });
+
+            // Add keyboard handler to close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        });
+
+        // Toggle Function
+        function toggleDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            const backdrop = document.querySelector('.sidebar-backdrop');
+            const mainContent = document.querySelector('.main-content');
+
+            dropdown.style.display = 'block';
+            setTimeout(() => {
+                dropdown.classList.toggle('show');
+                if (dropdown.classList.contains('show')) {
+                    backdrop.classList.add('show');
+                    mainContent.classList.add('shifted');
+                } else {
+                    backdrop.classList.remove('show');
+                    mainContent.classList.remove('shifted');
+                    setTimeout(() => {
+                        if (!dropdown.classList.contains('show')) {
+                            dropdown.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            }, 10);
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(event) {
+            if (!event.target.matches('.user-icon')) {
+                const dropdown = document.getElementById('userDropdown');
+                const backdrop = document.querySelector('.sidebar-backdrop');
+                const mainContent = document.querySelector('.main-content');
+
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                    backdrop.classList.remove('show');
+                    mainContent.classList.remove('shifted');
+                    setTimeout(() => {
+                        if (!dropdown.classList.contains('show')) {
+                            dropdown.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Health Summary Functions
+        function updateHealthSummary() {
+            // Get latest metrics from localStorage
+            const metrics = {
+                weight: localStorage.getItem('weight') || '--',
+                bloodPressure: localStorage.getItem('bloodPressure') || '--',
+                heartRate: localStorage.getItem('heart_rate') || '--',
+                water: parseInt(localStorage.getItem('waterIntake') || 0),
+                exercise: parseInt(localStorage.getItem('exerciseMinutes') || 0),
+                calories: parseInt(localStorage.getItem('caloriesConsumed') || 0)
+            };
+
+            // Update metrics display
+            if (document.getElementById('weightValue')) {
+                document.getElementById('weightValue').textContent = metrics.weight + ' kg';
+            }
+            if (document.getElementById('bpValue')) {
+                document.getElementById('bpValue').textContent = metrics.bloodPressure;
+            }
+            if (document.getElementById('hrValue')) {
+                document.getElementById('hrValue').textContent = metrics.heartRate + ' bpm';
+            }
+
+            // Update progress bars
+            const waterProgress = (metrics.water / 8) * 100;
+            const exerciseProgress = (metrics.exercise / 30) * 100;
+            const calorieProgress = (metrics.calories / 2000) * 100;
+
+            if (document.getElementById('waterProgress')) {
+                document.getElementById('waterProgress').style.width = waterProgress + '%';
+                document.getElementById('waterValue').textContent = `${metrics.water}/8 glasses`;
+            }
+
+            if (document.getElementById('exerciseProgress')) {
+                document.getElementById('exerciseProgress').style.width = exerciseProgress + '%';
+                document.getElementById('exerciseValue').textContent = `${metrics.exercise}/30 min`;
+            }
+
+            if (document.getElementById('nutritionProgress')) {
+                document.getElementById('nutritionProgress').style.width = calorieProgress + '%';
+                document.getElementById('nutritionValue').textContent = `${metrics.calories}/2000 cal`;
+            }
+
+            // Update last update time
+            if (document.getElementById('lastUpdateTime')) {
+                document.getElementById('lastUpdateTime').textContent = new Date().toLocaleTimeString();
+            }
+        }
+
+        // Add event listeners for form submissions to update summary
+        document.addEventListener('DOMContentLoaded', function() {
+            // Health Form
+            const healthForm = document.getElementById('healthForm');
+            if (healthForm) {
+                healthForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    
+                    // Save health metrics
+                    localStorage.setItem('weight', form.weight.value);
+                    localStorage.setItem('bloodPressure', `${form.systolic.value}/${form.diastolic.value}`);
+                    localStorage.setItem('heart_rate', form.heart_rate.value);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = 'Health metrics updated successfully';
+                    form.appendChild(messageDiv);
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Meal Form
+            const mealForm = document.getElementById('mealForm');
+            if (mealForm) {
+                mealForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    
+                    // Calculate total calories
+                    let totalCalories = 0;
+                    const foodItems = document.querySelectorAll('.food-item-row');
+                    foodItems.forEach(item => {
+                        const calories = parseInt(item.querySelector('input[name="calories[]"]').value) || 0;
+                        totalCalories += calories;
+                    });
+
+                    // Update calories in localStorage
+                    const currentCalories = parseInt(localStorage.getItem('caloriesConsumed') || 0);
+                    localStorage.setItem('caloriesConsumed', currentCalories + totalCalories);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = `Successfully logged meal (${totalCalories} calories)`;
+                    form.appendChild(messageDiv);
+
+                    // Reset form
+                    form.reset();
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Exercise Form
+            const exerciseForm = document.getElementById('exerciseForm');
+            if (exerciseForm) {
+                exerciseForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    const minutes = parseInt(form.duration.value) || 0;
+
+                    // Update exercise minutes in localStorage
+                    const currentMinutes = parseInt(localStorage.getItem('exerciseMinutes') || 0);
+                    localStorage.setItem('exerciseMinutes', currentMinutes + minutes);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = `Successfully logged exercise (${minutes} minutes)`;
+                    form.appendChild(messageDiv);
+
+                    // Reset form
+                    form.reset();
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Water Form
+            const waterForm = document.getElementById('waterForm');
+            if (waterForm) {
+                waterForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    const glasses = parseInt(form.glasses.value) || 0;
+
+                    // Update water intake in localStorage
+                    const currentGlasses = parseInt(localStorage.getItem('waterIntake') || 0);
+                    localStorage.setItem('waterIntake', currentGlasses + glasses);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = `Successfully logged water intake (${glasses} glasses)`;
+                    form.appendChild(messageDiv);
+
+                    // Reset form
+                    form.reset();
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Update summary when any modal is opened
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('show.bs.modal', function() {
+                    updateHealthSummary();
+                });
+            });
+        });
+    </script>
+
+    <script>
+        // Add form submission handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Health Form
+            const healthForm = document.getElementById('healthForm');
+            if (healthForm) {
+                healthForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    
+                    // Save health metrics
+                    localStorage.setItem('weight', form.weight.value);
+                    localStorage.setItem('bloodPressure', `${form.systolic.value}/${form.diastolic.value}`);
+                    localStorage.setItem('heart_rate', form.heart_rate.value);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = 'Health metrics updated successfully';
+                    form.appendChild(messageDiv);
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Meal Form
+            const mealForm = document.getElementById('mealForm');
+            if (mealForm) {
+                mealForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    
+                    // Calculate total calories
+                    let totalCalories = 0;
+                    const foodItems = document.querySelectorAll('.food-item-row');
+                    foodItems.forEach(item => {
+                        const calories = parseInt(item.querySelector('input[name="calories[]"]').value) || 0;
+                        totalCalories += calories;
+                    });
+
+                    // Update calories in localStorage
+                    const currentCalories = parseInt(localStorage.getItem('caloriesConsumed') || 0);
+                    localStorage.setItem('caloriesConsumed', currentCalories + totalCalories);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = `Successfully logged meal (${totalCalories} calories)`;
+                    form.appendChild(messageDiv);
+
+                    // Reset form
+                    form.reset();
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Exercise Form
+            const exerciseForm = document.getElementById('exerciseForm');
+            if (exerciseForm) {
+                exerciseForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    const minutes = parseInt(form.duration.value) || 0;
+
+                    // Update exercise minutes in localStorage
+                    const currentMinutes = parseInt(localStorage.getItem('exerciseMinutes') || 0);
+                    localStorage.setItem('exerciseMinutes', currentMinutes + minutes);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = `Successfully logged exercise (${minutes} minutes)`;
+                    form.appendChild(messageDiv);
+
+                    // Reset form
+                    form.reset();
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Water Form
+            const waterForm = document.getElementById('waterForm');
+            if (waterForm) {
+                waterForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const form = event.target;
+                    const glasses = parseInt(form.glasses.value) || 0;
+
+                    // Update water intake in localStorage
+                    const currentGlasses = parseInt(localStorage.getItem('waterIntake') || 0);
+                    localStorage.setItem('waterIntake', currentGlasses + glasses);
+
+                    // Show success message
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = `Successfully logged water intake (${glasses} glasses)`;
+                    form.appendChild(messageDiv);
+
+                    // Reset form
+                    form.reset();
+
+                    // Remove message after 3 seconds
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    // Close modal after delay
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                });
+            }
+
+            // Update summary when any modal is opened
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('show.bs.modal', function() {
+                    updateHealthSummary();
+                });
+            });
+        });
+    </script>
+
+    <script>
+        // Handle water form submission
+        function handleWaterSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const amount = parseInt(form.querySelector('[name="amount"]').value);
+
+            fetch('/log_water', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({ amount: amount })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert alert-success mt-3';
+                    messageDiv.textContent = data.message;
+                    form.appendChild(messageDiv);
+
+                    form.reset();
+                    updateProgress(); // Update progress after successful submission
+
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Failed to log water intake');
+                }
+            })
+            .catch(error => {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger mt-3';
+                errorDiv.textContent = error.message || 'An error occurred while logging water intake';
+                form.appendChild(errorDiv);
+
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/health.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/hospital-finder.js') }}"></script>
+    <script>
+        let mapInitialized = false;
+
+        async function initializeMap() {
+            try {
+                const { Map } = await google.maps.importLibrary("maps");
+                const { PlacesService } = await google.maps.importLibrary("places");
+                
+                // Only initialize if not already done
+                if (!mapInitialized) {
+                    await window.initMap();
+                    mapInitialized = true;
+                }
+            } catch (error) {
+                console.error('Error initializing map:', error);
+            }
+        }
+
+        // Initialize map when the page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeMap);
+        } else {
+            initializeMap();
+        }
+    </script>
+</body>
+</html>
