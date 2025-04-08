@@ -1,0 +1,308 @@
+{
+    "training_data": [
+        {
+            "symptoms": ["fever", "cough", "sore throat"],
+            "disease": "Common Cold",
+            "treatment": ["Rest", "Hydrate", "Over-the-counter medicine"],
+            "advice": "Stay home, drink fluids, and rest."
+        },
+        {
+            "symptoms": ["fever", "chills", "body ache"],
+            "disease": "Flu",
+            "treatment": ["Rest", "Antiviral drugs", "Fluids"],
+            "advice": "Consider seeing a doctor if symptoms worsen."
+        },
+        {
+            "symptoms": ["persistent sadness", "loss of interest", "fatigue"],
+            "disease": "Depression",
+            "treatment": ["Therapy", "Medication"],
+            "advice": "Speak to a mental health professional."
+        },
+        {
+            "symptoms": ["chest pain", "shortness of breath", "nausea"],
+            "disease": "Heart Attack",
+            "treatment": ["Emergency care"],
+            "advice": "Call emergency services immediately."
+        },
+        {
+            "symptoms": ["headache", "nausea", "sensitivity to light"],
+            "disease": "Migraine",
+            "treatment": ["Pain relievers", "Rest", "Dark room"],
+            "advice": "Avoid triggers like stress and bright light."
+        },
+        {
+            "symptoms": ["persistent worry", "restlessness", "fatigue"],
+            "disease": "Anxiety",
+            "treatment": ["Therapy", "Relaxation techniques"],
+            "advice": "Practice mindfulness and seek counseling."
+        },
+        {
+            "symptoms": ["heavy bleeding", "severe cramps", "irregular periods"],
+            "disease": "PCOS",
+            "treatment": ["Hormonal therapy", "Healthy diet"],
+            "advice": "Consult a gynecologist for diagnosis and care."
+        },
+        {
+            "symptoms": ["frequent urination", "increased thirst", "weight loss"],
+            "disease": "Diabetes",
+            "treatment": ["Medication", "Lifestyle changes"],
+            "advice": "Monitor blood sugar regularly."
+        },
+        {
+            "symptoms": ["persistent cough", "shortness of breath", "chest tightness"],
+            "disease": "Asthma",
+            "treatment": ["Inhaler", "Avoid triggers"],
+            "advice": "Always carry your inhaler."
+        },
+        {
+            "symptoms": ["abdominal pain", "bloating", "diarrhea"],
+            "disease": "Irritable Bowel Syndrome (IBS)",
+            "treatment": ["Dietary changes", "Stress management"],
+            "advice": "Avoid trigger foods like dairy, gluten."
+        },
+        {
+            "greeting": ["hi", "hello", "hey", "good morning", "good evening"],
+            "response": "Hello! How can I assist you today?"
+        },
+        {
+            "thank_you": ["thank you", "thanks", "thanks a lot", "thank you so much"],
+            "response": "You're welcome! Let me know if you need anything else."
+        },
+        {
+            "symptoms": ["sharp abdominal pain", "vomiting", "loss of appetite"],
+            "disease": "Appendicitis",
+            "treatment": ["Surgery"],
+            "advice": "Seek emergency care immediately."
+        },
+        {
+            "symptoms": ["nausea", "vomiting", "diarrhea"],
+            "disease": "Food Poisoning",
+            "treatment": ["Fluids", "Rest"],
+            "advice": "Stay hydrated and avoid solid food until symptoms ease."
+        },
+        {
+            "symptoms": ["skin rash", "fever", "joint pain"],
+            "disease": "Dengue Fever",
+            "treatment": ["Fluids", "Pain relief"],
+            "advice": "Avoid mosquito bites."
+        },
+        {
+            "symptoms": ["difficulty sleeping", "fatigue", "irritability"],
+            "disease": "Insomnia",
+            "treatment": ["Sleep hygiene", "Therapy"],
+            "advice": "Establish a regular bedtime routine."
+        },
+        {
+            "symptoms": ["numbness", "weakness", "loss of balance"],
+            "disease": "Stroke",
+            "treatment": ["Emergency care"],
+            "advice": "Call emergency services immediately."
+        },
+        {
+            "symptoms": ["back pain", "muscle stiffness", "limited motion"],
+            "disease": "Back Strain",
+            "treatment": ["Rest", "Pain relief"],
+            "advice": "Practice good posture."
+        },
+        {
+            "symptoms": ["severe menstrual cramps", "nausea", "lower back pain"],
+            "disease": "Dysmenorrhea",
+            "treatment": ["Pain relief", "Heat therapy"],
+            "advice": "Track symptoms and consult a doctor if severe."
+        },
+        {
+            "symptoms": ["sore throat", "swollen glands", "fever"],
+            "disease": "Tonsillitis",
+            "treatment": ["Rest", "Antibiotics (if bacterial)"],
+            "advice": "Avoid irritants and get plenty of rest."
+        },
+        {
+            "symptoms": ["shortness of breath", "wheezing", "cough"],
+            "disease": "COPD",
+            "treatment": ["Medication", "Oxygen therapy"],
+            "advice": "Avoid smoking and pollutants."
+        },
+        {
+            "symptoms": ["yellow skin", "fatigue", "dark urine"],
+            "disease": "Jaundice",
+            "treatment": ["Medical examination", "Liver function tests"],
+            "advice": "Avoid alcohol and fatty foods."
+        },
+        {
+            "symptoms": ["sore muscles", "fatigue", "headache"],
+            "disease": "Fibromyalgia",
+            "treatment": ["Pain relievers", "Physical therapy"],
+            "advice": "Manage stress and rest regularly."
+        },
+        {
+            "symptoms": ["unexplained weight loss", "fatigue", "frequent urination"],
+            "disease": "Hyperthyroidism",
+            "treatment": ["Medication", "Radioactive iodine"],
+            "advice": "Monitor thyroid function with regular tests."
+        },
+        {
+            "symptoms": ["muscle weakness", "double vision", "difficulty swallowing"],
+            "disease": "Myasthenia Gravis",
+            "treatment": ["Anticholinesterase medication", "Thymectomy"],
+            "advice": "Consult a neurologist for proper diagnosis."
+        },
+        {
+            "symptoms": ["yellow nails", "pain", "swelling"],
+            "disease": "Nail Fungus",
+            "treatment": ["Antifungal treatment", "Good hygiene"],
+            "advice": "Avoid wearing tight shoes."
+        },
+        {
+            "symptoms": ["hot flashes", "night sweats", "mood swings"],
+            "disease": "Menopause",
+            "treatment": ["Hormonal therapy", "Lifestyle changes"],
+            "advice": "Stay hydrated and avoid spicy foods."
+        },
+        {
+            "symptoms": ["joint pain", "swelling", "stiffness"],
+            "disease": "Arthritis",
+            "treatment": ["Pain relievers", "Physical therapy", "Exercise"],
+            "advice": "Stay active and maintain a healthy weight."
+        },
+        {
+            "symptoms": ["high blood pressure", "headache", "dizziness"],
+            "disease": "Hypertension",
+            "treatment": ["Medication", "Diet changes", "Exercise"],
+            "advice": "Reduce salt intake and monitor blood pressure regularly."
+        },
+        {
+            "symptoms": ["fatigue", "pale skin", "shortness of breath"],
+            "disease": "Anemia",
+            "treatment": ["Iron supplements", "Diet changes"],
+            "advice": "Increase iron-rich foods like spinach and red meat."
+        },
+        {
+            "symptoms": ["burning sensation", "chest pain", "acid reflux"],
+            "disease": "GERD (Acid Reflux)",
+            "treatment": ["Antacids", "Diet changes", "Lifestyle adjustments"],
+            "advice": "Avoid spicy foods and eat smaller meals."
+        },
+        {
+            "symptoms": ["memory loss", "confusion", "difficulty thinking"],
+            "disease": "Alzheimer's Disease",
+            "treatment": ["Cognitive therapy", "Medication"],
+            "advice": "Early diagnosis can help slow progression."
+        },
+        {
+            "symptoms": ["excessive thirst", "blurred vision", "frequent urination"],
+            "disease": "Diabetes Type 2",
+            "treatment": ["Medication", "Diet control", "Exercise"],
+            "advice": "Monitor blood sugar levels regularly."
+        },
+        {
+            "symptoms": ["blood in urine", "painful urination", "lower abdominal pain"],
+            "disease": "Urinary Tract Infection (UTI)",
+            "treatment": ["Antibiotics", "Hydration"],
+            "advice": "Drink plenty of water and maintain hygiene."
+        },
+        {
+            "symptoms": ["frequent diarrhea", "abdominal pain", "weight loss"],
+            "disease": "Crohn's Disease",
+            "treatment": ["Medication", "Dietary adjustments"],
+            "advice": "Avoid trigger foods like dairy and caffeine."
+        },
+        {
+            "symptoms": ["dry skin", "itching", "red patches"],
+            "disease": "Eczema",
+            "treatment": ["Moisturizers", "Steroid creams"],
+            "advice": "Use fragrance-free skin products and avoid hot showers."
+        },
+        {
+            "symptoms": ["hair loss", "fatigue", "brittle nails"],
+            "disease": "Hypothyroidism",
+            "treatment": ["Thyroid hormone replacement", "Dietary iodine"],
+            "advice": "Get thyroid levels checked regularly."
+        },
+        {
+            "symptoms": ["blurred vision", "eye pain", "sensitivity to light"],
+            "disease": "Glaucoma",
+            "treatment": ["Eye drops", "Laser treatment", "Surgery"],
+            "advice": "Regular eye checkups are essential to prevent vision loss."
+        },
+        {
+            "symptoms": ["chronic fatigue", "difficulty concentrating", "headache"],
+            "disease": "Chronic Fatigue Syndrome",
+            "treatment": ["Rest", "Stress management", "Healthy diet"],
+            "advice": "Pace yourself and avoid overexertion."
+        },
+        {
+            "symptoms": ["frequent nosebleeds", "bruising", "fatigue"],
+            "disease": "Leukemia",
+            "treatment": ["Chemotherapy", "Radiation", "Bone marrow transplant"],
+            "advice": "Early detection is key; consult a hematologist if symptoms persist."
+        },
+        {
+            "symptoms": ["itchy skin", "rash", "red patches"],
+            "disease": "Eczema",
+            "treatment": ["Moisturizers", "Anti-inflammatory creams"],
+            "advice": "Avoid triggers like harsh soaps and extreme temperatures."
+        },
+        {
+            "symptoms": ["persistent cough", "chest pain", "blood in sputum"],
+            "disease": "Tuberculosis",
+            "treatment": ["Antibiotic therapy"],
+            "advice": "Early treatment is crucial; avoid close contact with others."
+        },
+        {
+            "symptoms": ["fatigue", "pale skin", "shortness of breath"],
+            "disease": "Anemia",
+            "treatment": ["Iron supplements", "Diet rich in iron"],
+            "advice": "Increase intake of leafy greens, red meat, and legumes."
+        },
+        {
+            "symptoms": ["dizziness", "confusion", "low blood sugar"],
+            "disease": "Hypoglycemia",
+            "treatment": ["Glucose tablets", "Eating small frequent meals"],
+            "advice": "Monitor blood sugar levels regularly."
+        },
+        {
+            "symptoms": ["dry eyes", "dry mouth", "joint pain"],
+            "disease": "Sjogren's Syndrome",
+            "treatment": ["Artificial tears", "Immunosuppressants"],
+            "advice": "Stay hydrated and use lubricating eye drops."
+        },
+        {
+            "symptoms": ["dark stools", "vomiting blood", "abdominal pain"],
+            "disease": "Stomach Ulcer",
+            "treatment": ["Antacids", "H. pylori treatment"],
+            "advice": "Avoid spicy foods, alcohol, and smoking."
+        },
+        {
+            "symptoms": ["excessive thirst", "frequent urination", "blurred vision"],
+            "disease": "Type 1 Diabetes",
+            "treatment": ["Insulin therapy", "Blood sugar monitoring"],
+            "advice": "Maintain a balanced diet and exercise regularly."
+        },
+        {
+            "symptoms": ["uncontrolled movements", "difficulty walking", "slurred speech"],
+            "disease": "Parkinson’s Disease",
+            "treatment": ["Medication", "Physical therapy"],
+            "advice": "Stay active and engage in therapy to improve motor skills."
+        },
+        {
+            "symptoms": ["fatigue", "weight gain", "dry skin"],
+            "disease": "Hypothyroidism",
+            "treatment": ["Thyroid hormone therapy"],
+            "advice": "Get regular thyroid function tests."
+        },
+        {
+            "symptoms": ["red eyes", "eye pain", "blurred vision"],
+            "disease": "Conjunctivitis (Pink Eye)",
+            "treatment": ["Antibiotic eye drops", "Warm compress"],
+            "advice": "Avoid touching your eyes and wash hands frequently."
+        },
+        {
+            "symptoms": ["missed period", "nausea", "fatigue", "food cravings"],
+            "disease": "Pregnancy",
+            "treatment": ["Prenatal vitamins", "Healthy diet", "Regular check-ups"],
+            "advice": "Take a home pregnancy test and consult a doctor for confirmation. Maintain a balanced diet and stay hydrated."
+        }
+        
+
+    ]
+}
